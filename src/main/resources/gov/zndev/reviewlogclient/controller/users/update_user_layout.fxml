@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane prefHeight="254.0" prefWidth="646.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.zndev.reviewlogclient.controller.users.UpdateUserLayout">
+   <children>
+      <TextField fx:id="user_fullname" layoutX="24.0" layoutY="72.0" prefHeight="25.0" prefWidth="285.0" promptText="This field is Required." />
+      <Label layoutX="24.0" layoutY="54.0" text="Fullname" />
+      <TextField fx:id="user_username" layoutX="24.0" layoutY="124.0" prefHeight="25.0" prefWidth="285.0" promptText="This field is Required." />
+      <Label layoutX="24.0" layoutY="106.0" text="Username" />
+      <Label layoutX="23.0" layoutY="23.0" text="Update User">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+      <Line endX="432.0" layoutX="184.0" layoutY="32.0" startX="-82.0" />
+      <Label layoutX="334.0" layoutY="54.0" text="Old Password" />
+      <Label layoutX="334.0" layoutY="106.0" text="New Password" />
+      <ComboBox fx:id="user_userRole" layoutX="24.0" layoutY="177.0" prefHeight="25.0" prefWidth="284.0" />
+      <Label layoutX="24.0" layoutY="159.0" text="User Role" />
+      <PasswordField fx:id="user_password" layoutX="333.0" layoutY="72.0" prefHeight="25.0" prefWidth="284.0" promptText="Enter Password" />
+      <PasswordField fx:id="user_new_pass" layoutX="334.0" layoutY="124.0" prefHeight="25.0" prefWidth="284.0" promptText="Re-enter Password" />
+      <Label layoutX="334.0" layoutY="159.0" text="Confirm Password" />
+      <PasswordField fx:id="user_confirm_pass" layoutX="334.0" layoutY="177.0" prefHeight="25.0" prefWidth="284.0" promptText="Re-enter Password" />
+      <Button layoutX="229.0" layoutY="217.0" mnemonicParsing="false" onAction="#onUpdateInfo" text="Update Info" />
+      <Button layoutX="509.0" layoutY="216.0" mnemonicParsing="false" onAction="#onUpdatePassword" text="Update Password" />
+   </children>
+</AnchorPane>

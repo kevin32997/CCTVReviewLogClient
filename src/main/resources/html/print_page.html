@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <style>
+.vl {
+  border-bottom: 2px solid black;
+  width: 250px;
+  margin-top: 75px;
+  margin-left:15px;
+  margin-bottom:15px;
+}
+
+
+
+    </style>
+</head>
+<body style="padding-left:50px;">
+
+<div class="container" style="
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+">
+    <div class="col"
+    >
+        <small>Name</small>
+        <p class="m-t-5 m-b-5">
+            <strong class="text-inverse" id="name">Ernas, Kevin Dalman</strong>
+        </p>
+    </div>
+
+    <div class="col">
+        <small>Office</small>
+        <p class="m-t-5 m-b-5">
+            <strong class="text-inverse" id="office">PGO-MISO</strong>
+        </p>
+    </div>
+
+    <div class="col">
+        <small>Incident / Description</small>
+        <div id="description" style="padding-left:20px;">
+
+        </div>
+
+    </div>
+
+    <div class="col">
+        <small>Review Id</small>
+        <p class="m-t-5 m-b-5">
+            <strong class="text-inverse" id="reviewId">172938719</strong>
+        </p>
+    </div>
+
+    <div class="col">
+        <small>Inclusive Dates</small>
+        <p class="m-t-5 m-b-5">
+            <strong class="text-inverse" id="inclusiveDates">March 10,2020</strong>
+        </p>
+    </div>
+
+    <div class="col">
+        <small>Date of Review</small>
+        <p class="m-t-5 m-b-5">
+            <strong class="text-inverse" id="reviewDate">March 10,2020</strong>
+        </p>
+
+    </div>
+
+
+    <div class="col">
+        <small>Noted By:</small>
+
+
+    </div>
+
+    <div class="vl"></div>
+    <div class="col">
+        <small>Cyclops</small><br>
+        <small id="cyclops" style="font-weight:bold;"></small>
+    </div>
+</div>
+
+
+</div>
+
+</body>
+
+
+<script>
+
+    function setName(name){
+        document.getElementById('name').innerHTML=name;
+    }
+
+    function setData(reviewLog, personnel, incidentString){
+        document.getElementById('name').innerHTML=personnel.getFullName();
+        document.getElementById('office').innerHTML=personnel.getOffice();
+        document.getElementById('cyclops').innerHTML=reviewLog.getReviewerCodeName();
+        document.getElementById('description').innerHTML=incidentString;
+        document.getElementById('reviewId').innerHTML=reviewLog.getReviewId();
+        document.getElementById('reviewDate').innerHTML=reviewLog.getFormattedReviewDate();
+        document.getElementById('inclusiveDates').innerHTML=reviewLog.getInclusiveDates();
+    }
+
+</script>
+
+</html>
