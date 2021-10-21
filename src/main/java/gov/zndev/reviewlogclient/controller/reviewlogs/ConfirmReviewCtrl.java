@@ -1,9 +1,11 @@
 package gov.zndev.reviewlogclient.controller.reviewlogs;
 
 import gov.zndev.reviewlogclient.controller.MainController;
-import gov.zndev.reviewlogclient.controller.components.PrintPreviewCtrl;
-import gov.zndev.reviewlogclient.controller.components.PrintablePageCtrl;
+import gov.zndev.reviewlogclient.controller.components.printer.PrintPreviewCtrl;
+import gov.zndev.reviewlogclient.controller.components.printer.PrintablePageCtrl;
+import gov.zndev.reviewlogclient.controller.components.printer.PrinterListCtrl;
 import gov.zndev.reviewlogclient.helpers.AlertDialogHelper;
+import gov.zndev.reviewlogclient.helpers.Helper;
 import gov.zndev.reviewlogclient.helpers.ResourceHelper;
 import gov.zndev.reviewlogclient.models.Incident;
 import gov.zndev.reviewlogclient.models.Personnel;
@@ -15,12 +17,11 @@ import gov.zndev.reviewlogclient.repositories.system.SystemDataRepository;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.print.PageLayout;
-import javafx.print.PageOrientation;
-import javafx.print.Paper;
-import javafx.print.PrinterJob;
+import javafx.print.*;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -78,13 +79,25 @@ public class ConfirmReviewCtrl {
 
     private MainController mainController;
 
+    private PrinterJob printerJob;
+
+    @FXML
+    private Label printer_label;
+
 
     @FXML
     public void initialize() {
-        reviewLogsRepo=new ReviewLogsRepository();
-        systemDataRepo=new SystemDataRepository();
-        incidentRepo=new IncidentRepository();
+        reviewLogsRepo = new ReviewLogsRepository();
+        systemDataRepo = new SystemDataRepository();
+        incidentRepo = new IncidentRepository();
 
+        setupPrinter();
+
+    }
+
+    private void setupPrinter(){
+        printerJob = PrinterJob.createPrinterJob();
+        printer_label.setText(printerJob.getPrinter().getName());
     }
 
     public void setStage(Stage stage) {
@@ -112,7 +125,7 @@ public class ConfirmReviewCtrl {
 
                 Map<String, String> map = (Map<String, String>) object;
                 if (map.get(ResourceHelper.CONFIG_KEY_LASTREVIEWID) != null) {
-                    reviewLog.setId(Integer.parseInt(map.get(ResourceHelper.CONFIG_KEY_LASTREVIEWID))+1);
+                    reviewLog.setId(Integer.parseInt(map.get(ResourceHelper.CONFIG_KEY_LASTREVIEWID)) + 1);
                     DecimalFormat df = new DecimalFormat("000000");
                     reviewLog.setReviewId(df.format(reviewLog.getId()));
                 }
@@ -176,6 +189,7 @@ public class ConfirmReviewCtrl {
                             printPage(printablePage);
                         }).start();
                     }
+
                     Platform.runLater(() -> {
                         if (printThePage) {
                             AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.INFORMATION, "System Message", "Saved Successfully", "Now printing, please wait.");
@@ -192,8 +206,40 @@ public class ConfirmReviewCtrl {
         });
     }
 
-    private void saveOnly() {
+    private void showPrinterOptions() {
+        FxControllerAndView<PrinterListCtrl, AnchorPane> selectPrinter = fxWeaver.load(PrinterListCtrl.class);
 
+        Stage stage = Helper.CreateStage("Select Printer");
+        stage.setScene(new Scene(selectPrinter.getView().get()));
+        stage.setResizable(false);
+
+        selectPrinter.getController().createDialog(stage, printer -> {
+            setPrinter(printer);
+        });
+        stage.show();
+    }
+
+    private void setPrinter(Printer printer) {
+        new Thread(() -> {
+            try {
+                printerJob.setPrinter(printer);
+                Platform.runLater(() -> {
+                    printer_label.setText(printerJob.getPrinter().getName());
+                });
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+    }
+
+
+    private void saveOnly() {
+    }
+
+    @FXML
+    void onShowPrinterOptions(ActionEvent event) {
+        showPrinterOptions();
     }
 
 
@@ -210,7 +256,6 @@ public class ConfirmReviewCtrl {
 
     private void printPage(Node node) {
 
-        PrinterJob printerJob = PrinterJob.createPrinterJob();
         if (printerJob != null) {
             PageLayout pageLayout = printerJob.getPrinter().createPageLayout(Paper.NA_LETTER, PageOrientation.PORTRAIT, 0, 0, 0, 0);
 

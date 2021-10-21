@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="247.0" prefWidth="333.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.zndev.reviewlogclient.controller.components.ChangePassCtrl">
+   <children>
+      <Label layoutX="23.0" layoutY="29.0" text="Current Password" />
+      <Label layoutX="23.0" layoutY="83.0" text="New Password" />
+      <Label layoutX="24.0" layoutY="137.0" text="Re-enter New Password" />
+      <PasswordField fx:id="current_password" layoutX="23.0" layoutY="48.0" prefHeight="25.0" prefWidth="284.0" promptText="This field is Required" />
+      <PasswordField fx:id="new_password" layoutX="23.0" layoutY="101.0" prefHeight="25.0" prefWidth="284.0" promptText="This field is Required" />
+      <PasswordField fx:id="re_enter_pass" layoutX="23.0" layoutY="155.0" prefHeight="25.0" prefWidth="284.0" promptText="This field is Required" />
+      <Button layoutX="187.0" layoutY="200.0" mnemonicParsing="false" onAction="#onUpdatePassword" prefHeight="25.0" prefWidth="113.0" text="Update Password" />
+   </children>
+</AnchorPane>

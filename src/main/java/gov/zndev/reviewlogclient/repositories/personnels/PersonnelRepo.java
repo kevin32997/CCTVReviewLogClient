@@ -1,5 +1,6 @@
 package gov.zndev.reviewlogclient.repositories.personnels;
 
+import gov.zndev.reviewlogclient.helpers.ConfigProperties;
 import gov.zndev.reviewlogclient.helpers.Helper;
 import gov.zndev.reviewlogclient.helpers.ResourceHelper;
 import gov.zndev.reviewlogclient.models.Personnel;
@@ -25,7 +26,7 @@ public class PersonnelRepo {
 
     public PersonnelRepo() {
         retrofit = new Retrofit.Builder()
-                .baseUrl(ResourceHelper.BASE_URL)
+                .baseUrl(ConfigProperties.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -197,7 +198,6 @@ public class PersonnelRepo {
                     @Override
                     public void onResponse(Call<RequestResponse> call, Response<RequestResponse> response) {
                         if (response.code() == 200) {
-
                             delegate.activityDone(true, "Request Successful.", Helper.CastToPersonnelList(response.body().getList()));
                         } else {
                             delegate.activityDone(false, "Server not responding.\nError Code: " + response.code(), null);

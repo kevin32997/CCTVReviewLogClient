@@ -1,5 +1,6 @@
 package gov.zndev.reviewlogclient.repositories.system;
 
+import gov.zndev.reviewlogclient.helpers.ConfigProperties;
 import gov.zndev.reviewlogclient.helpers.ResourceHelper;
 import gov.zndev.reviewlogclient.models.other.RepoInterface;
 import gov.zndev.reviewlogclient.models.other.RequestResponse;
@@ -21,7 +22,7 @@ public class SystemDataRepository {
 
     public SystemDataRepository() {
         retrofit = new Retrofit.Builder()
-                .baseUrl(ResourceHelper.BASE_URL)
+                .baseUrl(ConfigProperties.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

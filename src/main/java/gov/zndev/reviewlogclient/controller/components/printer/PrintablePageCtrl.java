@@ -1,4 +1,4 @@
-package gov.zndev.reviewlogclient.controller.components;
+package gov.zndev.reviewlogclient.controller.components.printer;
 
 
 import gov.zndev.reviewlogclient.models.Incident;

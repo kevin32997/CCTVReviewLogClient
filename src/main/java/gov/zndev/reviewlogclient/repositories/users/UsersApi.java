@@ -41,6 +41,12 @@ public interface UsersApi {
             @Path("password") String password
     );
 
+    @GET("api/users/search/{search}/{size}")
+    Call<RequestResponse> searchUser(
+            @Path("search") String search,
+            @Path("size") int size
+    );
+
 
     @PUT("api/user/update/{user_id}")
     @Multipart

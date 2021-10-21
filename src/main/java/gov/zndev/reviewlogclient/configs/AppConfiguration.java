@@ -1,5 +1,6 @@
 package gov.zndev.reviewlogclient.configs;
 
+import gov.zndev.reviewlogclient.helpers.ConfigProperties;
 import gov.zndev.reviewlogclient.helpers.Helper;
 import gov.zndev.reviewlogclient.helpers.ResourceHelper;
 import gov.zndev.reviewlogclient.models.User;
@@ -13,11 +14,15 @@ import javax.annotation.PostConstruct;
 import java.io.*;
 import java.util.Properties;
 
+
 @Configuration
 public class AppConfiguration {
     private static final Logger log = LoggerFactory.getLogger(AppConfiguration.class);
     private UsersRepo usersRepo;
 
+    /*
+        Automatically runs thanks to Spring boot
+     */
     @PostConstruct
     private void init() {
         log.info("Running Configurations");
@@ -32,31 +37,48 @@ public class AppConfiguration {
         File configFile = new File("config.properties");
         try {
             if (configFile.exists()) {
-
+                /*
+                    Initializes system server, table row, etc.
+                 */
                 FileReader reader = new FileReader(configFile);
                 Properties props = new Properties();
                 props.load(reader);
 
-                String base_url = props.getProperty("base_url");
+                // Server Base URL
+                String base_url = props.getProperty(ConfigProperties.BASE_URL_KEY);
 
                 log.info("Base URL: " + base_url);
-                ResourceHelper.BASE_URL = base_url;
+                ConfigProperties.BASE_URL = base_url;
 
-                String editor_url = props.getProperty("editor_url");
+                // Table Row Size
 
-                log.info("Editor URL: " + editor_url);
-                ResourceHelper.EDITOR_URL = editor_url;
+                int table_row_size = 0;
+                try {
+                    if (props.getProperty(ConfigProperties.TABLE_ROW_SIZE_KEY) != null) {
+                        table_row_size = Integer.parseInt(props.getProperty(ConfigProperties.TABLE_ROW_SIZE_KEY));
+                    } else {
+                        table_row_size = ConfigProperties.DEFAULT_TABLE_ROW_SIZE;
+                    }
+                } catch (NumberFormatException ex) {
+                    log.error("config.properties " + ConfigProperties.TABLE_ROW_SIZE_KEY + " cant be int.", ex);
+                    table_row_size = ConfigProperties.DEFAULT_TABLE_ROW_SIZE;
+                }
+                ConfigProperties.TABLE_ROW_SIZE = table_row_size;
+
+
                 reader.close();
             } else {
                 // Create Default Configurations
-
                 Properties props = new Properties();
-                props.setProperty("base_url", "http://10.10.100.2:84/");
-                props.setProperty("editor_url", "http://localhost/editor/ckeditor/samples/index.html");
+
+                // Write Default Configs Here
+                props.setProperty(ConfigProperties.BASE_URL_KEY, ConfigProperties.DEFAULT_BASE_URL);
+                props.setProperty(ConfigProperties.TABLE_ROW_SIZE_KEY, "" + ConfigProperties.DEFAULT_TABLE_ROW_SIZE);
+
+                // Saves creates config.properties file
                 FileWriter writer = new FileWriter(configFile);
                 props.store(writer, "Server Settings");
                 writer.close();
-
             }
         } catch (FileNotFoundException ex) {
             // file does not exist

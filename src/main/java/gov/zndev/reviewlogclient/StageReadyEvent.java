@@ -11,6 +11,7 @@ public class StageReadyEvent extends ApplicationEvent {
     public StageReadyEvent(Stage stage) {
         super(stage);
         this.main_stage = stage;
+
     }
 
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="245.0" prefWidth="333.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.zndev.reviewlogclient.controller.components.UpdateUserInfoCtrl">
+   <children>
+      <TextField fx:id="fullname" layoutX="24.0" layoutY="34.0" prefHeight="25.0" prefWidth="285.0" promptText="This field is Required." />
+      <Label layoutX="24.0" layoutY="16.0" text="Fullname" />
+      <TextField fx:id="username" layoutX="24.0" layoutY="93.0" prefHeight="25.0" prefWidth="285.0" promptText="This field is Required." />
+      <Label layoutX="24.0" layoutY="75.0" text="Username" />
+      <ComboBox fx:id="user_role" layoutX="25.0" layoutY="149.0" prefHeight="25.0" prefWidth="284.0" />
+      <Label layoutX="25.0" layoutY="131.0" text="User Role" />
+      <Button layoutX="211.0" layoutY="193.0" mnemonicParsing="false" onAction="#onUpdateInfo" prefHeight="25.0" prefWidth="98.0" text="Update Info" />
+   </children>
+</AnchorPane>

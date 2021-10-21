@@ -1,6 +1,7 @@
 package gov.zndev.reviewlogclient.services;
 
 
+import gov.zndev.reviewlogclient.helpers.ConfigProperties;
 import gov.zndev.reviewlogclient.helpers.Helper;
 import gov.zndev.reviewlogclient.helpers.ResourceHelper;
 
@@ -21,7 +22,7 @@ public class TableUpdateService {
 
     public TableUpdateService() {
         retrofit = new Retrofit.Builder()
-                .baseUrl(ResourceHelper.BASE_URL)
+                .baseUrl(ConfigProperties.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

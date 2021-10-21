@@ -1,5 +1,6 @@
 package gov.zndev.reviewlogclient.repositories.incidents;
 
+import gov.zndev.reviewlogclient.helpers.ConfigProperties;
 import gov.zndev.reviewlogclient.helpers.Helper;
 import gov.zndev.reviewlogclient.helpers.ResourceHelper;
 import gov.zndev.reviewlogclient.models.Incident;
@@ -24,7 +25,7 @@ public class IncidentRepository {
 
     public IncidentRepository() {
         retrofit = new Retrofit.Builder()
-                .baseUrl(ResourceHelper.BASE_URL)
+                .baseUrl(ConfigProperties.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -134,6 +135,39 @@ public class IncidentRepository {
             });
 
         }).start();
+
+    }
+
+    public void awaitGetIncidentCountByReviewId(int review_id, RepoInterface delegate) {
+
+            Call<Map<String, Long>> call = incidentApi.getIncidentCountByReviewLog(review_id);
+            call.enqueue(new Callback<>() {
+                @Override
+                public void onResponse(Call<Map<String, Long>> call, Response<Map<String, Long>> response) {
+
+                    if (response.code() == 200) {
+                        Map<String, Long> responseBody = response.body();
+                        int count = responseBody.get("count").intValue();
+                        delegate.activityDone(true, "Review Logs Counted.", count);
+                    } else {
+                        delegate.activityDone(false, "Server Error.\nError Code: " + response.code(), null);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Map<String, Long>> call, Throwable t) {
+                    if (t instanceof ConnectException) {
+                        delegate.activityDone(false, "Cannot connect to server, Please check your connection.", null);
+                    } else if (t instanceof SocketTimeoutException) {
+                        delegate.activityDone(false, "Cannot connect to server. Please try again later. ", null);
+                    } else {
+                        delegate.activityDone(false, "An Error has occurred! \nError: " + t.getMessage(), null);
+                        t.printStackTrace();
+                    }
+                }
+            });
+
+
 
     }
 

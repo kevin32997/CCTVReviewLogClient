@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
@@ -29,17 +31,27 @@
       </Label>
       <Line endX="167.0" layoutX="175.0" layoutY="25.0" startX="-100.0" />
       <Line endX="180.0" layoutX="160.0" layoutY="137.0" startX="-100.0" />
-      <Button layoutX="241.0" layoutY="272.0" mnemonicParsing="false" onAction="#onSaveAndPrint" text="Save and Print">
+      <Button layoutX="82.0" layoutY="269.0" mnemonicParsing="false" onAction="#onSaveAndPrint" prefHeight="25.0" prefWidth="103.0" text="Save and Print">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Button>
-      <Button layoutX="172.0" layoutY="272.0" mnemonicParsing="false" onAction="#onSave" prefHeight="25.0" prefWidth="56.0" text="Save" />
+      <Button layoutX="16.0" layoutY="269.0" mnemonicParsing="false" onAction="#onSave" prefHeight="25.0" prefWidth="56.0" text="Save" />
       <ScrollPane fx:id="scroll_pane" hbarPolicy="NEVER" layoutX="357.0" layoutY="16.0" maxHeight="805.0" minHeight="805.0" prefHeight="805.0" prefWidth="596.0" vbarPolicy="NEVER" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" />
         </content>
       </ScrollPane>
       <TextField fx:id="review_date" editable="false" layoutX="13.0" layoutY="233.0" prefHeight="25.0" prefWidth="329.0" />
+      <Button layoutX="311.0" layoutY="269.0" mnemonicParsing="false" onAction="#onShowPrinterOptions" prefHeight="27.0" prefWidth="32.0" style="-fx-background-color: transparent;">
+         <graphic>
+            <ImageView fitHeight="19.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../../../setting.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <Label fx:id="printer_label" alignment="CENTER_RIGHT" layoutX="18.0" layoutY="300.0" prefHeight="17.0" prefWidth="321.0" />
    </children>
 </AnchorPane>

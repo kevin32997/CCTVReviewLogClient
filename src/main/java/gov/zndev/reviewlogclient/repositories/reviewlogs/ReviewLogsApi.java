@@ -61,9 +61,15 @@ public interface ReviewLogsApi {
             @Path("sortBy") String sortBy
     );
 
-    @GET("api/review_log/search/{search}/{size}")
-    Call<RequestResponse> searchReviewLog(
+    @GET("api/review_log/search/personnel/{search}/{size}")
+    Call<RequestResponse> searchReviewLogByPersonnel(
             @Path("search") String search,
+            @Path("size") int size
+    );
+
+    @GET("api/review_log/search/id/{search}/{size}")
+    Call<RequestResponse> searchReviewLogById(
+            @Path("search") int search,
             @Path("size") int size
     );
 

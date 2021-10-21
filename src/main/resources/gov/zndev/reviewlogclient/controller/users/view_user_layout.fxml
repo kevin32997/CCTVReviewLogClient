@@ -43,7 +43,8 @@
          </columnResizePolicy>
       </TableView>
       <Pagination fx:id="pagination" layoutX="333.0" layoutY="479.0" prefHeight="45.0" prefWidth="663.0" />
-      <Button layoutX="228.0" layoutY="245.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="79.0" text="Update" />
+      <Button layoutX="21.0" layoutY="245.0" mnemonicParsing="false" onAction="#onUpdateInfo" prefHeight="25.0" prefWidth="79.0" text="Update Info" />
       <Button fx:id="btnLogout" layoutX="917.0" layoutY="489.0" mnemonicParsing="false" onAction="#onLogout" prefHeight="8.0" prefWidth="79.0" text="Logout" />
+      <Button layoutX="160.0" layoutY="246.0" mnemonicParsing="false" onAction="#onChangePassword" prefHeight="25.0" prefWidth="145.0" text="Change Password" />
    </children>
 </AnchorPane>

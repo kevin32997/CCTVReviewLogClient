@@ -78,7 +78,7 @@ public class AddIncidentDescriptionCtrl {
 
         File file = new File("ckeditor/samples/index.html");
         log.info("File Exist: "+file.exists());
-        log.info("File Location: "+file.toURI().toString());
+        log.info("File Location: "+ file.toURI());
 
         webEngine = webview.getEngine();
         webEngine.load(file.toURI().toString());

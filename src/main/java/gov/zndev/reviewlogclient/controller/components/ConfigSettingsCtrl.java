@@ -1,6 +1,7 @@
 package gov.zndev.reviewlogclient.controller.components;
 
 import gov.zndev.reviewlogclient.helpers.AlertDialogHelper;
+import gov.zndev.reviewlogclient.helpers.ConfigProperties;
 import gov.zndev.reviewlogclient.helpers.Helper;
 import gov.zndev.reviewlogclient.helpers.ResourceHelper;
 import gov.zndev.reviewlogclient.models.other.RepoInterface;
@@ -31,7 +32,7 @@ public class ConfigSettingsCtrl {
     @FXML
     public void initialize() {
         systemRepo = new SystemDataRepository();
-        this.settings_address.setText(ResourceHelper.BASE_URL);
+        this.settings_address.setText(ConfigProperties.BASE_URL);
     }
 
     @FXML
@@ -41,17 +42,17 @@ public class ConfigSettingsCtrl {
             if (!address.endsWith("/")) {
                 address = address + "/";
             }
-            ResourceHelper.BASE_URL = address;
+            ConfigProperties.BASE_URL = address;
             try {
-                Helper.UpdateConfigurations();
+                ConfigProperties.UpdateConfigurations();
                 AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.INFORMATION, "System Info", "Configuration Saved", null);
             } catch (IOException e) {
                 e.printStackTrace();
                 AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "System Error", "Exception Occurred", e.getMessage());
             }
         } else {
-            AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "System Error", "Field cannot be empty", "Default: "+ResourceHelper.DEFAULT_BASE_URL);
-            settings_address.setText(ResourceHelper.BASE_URL);
+            AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "System Error", "Field cannot be empty", "Default: "+ConfigProperties.DEFAULT_BASE_URL);
+            settings_address.setText(ConfigProperties.BASE_URL);
         }
     }
 

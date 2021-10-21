@@ -1,8 +1,8 @@
 package gov.zndev.reviewlogclient.controller.reviewlogs;
 
 import gov.zndev.reviewlogclient.controller.components.IncidentCreatorCtrl;
-import gov.zndev.reviewlogclient.controller.components.PrintPreviewCtrl;
-import gov.zndev.reviewlogclient.controller.components.PrintablePageCtrl;
+import gov.zndev.reviewlogclient.controller.components.printer.PrintPreviewCtrl;
+import gov.zndev.reviewlogclient.controller.components.printer.PrintablePageCtrl;
 import gov.zndev.reviewlogclient.controller.components.ViewIncidentCtrl;
 import gov.zndev.reviewlogclient.controller.personnel.ViewPersonnelCtrl;
 import gov.zndev.reviewlogclient.helpers.AlertDialogHelper;

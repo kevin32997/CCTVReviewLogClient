@@ -2,16 +2,20 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
@@ -60,6 +64,12 @@
                         <ListView fx:id="review_incident_list" layoutX="14.0" layoutY="234.0" prefHeight="286.0" prefWidth="283.0" />
                         <Button layoutX="199.0" layoutY="528.0" mnemonicParsing="false" onAction="#onReviewAdd" prefHeight="25.0" prefWidth="97.0" text="Add " />
                         <Label layoutX="15.0" layoutY="215.0" text="Incident / Description" />
+                        <TextField fx:id="review_rowsize_field" layoutX="1110.0" layoutY="21.0" prefHeight="20.0" prefWidth="87.0" text="30" AnchorPane.rightAnchor="15.0" />
+                        <Label layoutX="1053.0" layoutY="26.0" text="Row Size" AnchorPane.rightAnchor="108.0">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Label>
                      </children>
                   </AnchorPane>
             </content>
@@ -99,6 +109,12 @@
                            </columnResizePolicy>
                         </TableView>
                         <Pagination fx:id="per_pagination" layoutX="311.0" layoutY="668.0" prefHeight="45.0" prefWidth="886.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="311.0" AnchorPane.rightAnchor="15.0" />
+                        <TextField fx:id="per_rowsize_field" layoutX="1110.0" layoutY="21.0" prefHeight="20.0" prefWidth="87.0" text="30" AnchorPane.rightAnchor="15.0" />
+                        <Label layoutX="1053.0" layoutY="26.0" text="Row Size" AnchorPane.rightAnchor="108.0">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Label>
                      </children>
                   </AnchorPane>
                </content>
@@ -137,18 +153,73 @@
                         <Label layoutX="15.0" layoutY="281.0" text="User Role" />
                         <PasswordField fx:id="user_password" layoutX="14.0" layoutY="195.0" prefHeight="25.0" prefWidth="284.0" promptText="Enter Password" />
                         <PasswordField fx:id="user_confirm_pass" layoutX="15.0" layoutY="247.0" prefHeight="25.0" prefWidth="284.0" promptText="Re-enter Password" />
+                        <TextField fx:id="user_rowsize_field" layoutX="1110.0" layoutY="21.0" prefHeight="20.0" prefWidth="87.0" text="30" AnchorPane.rightAnchor="15.0" />
+                        <Label layoutX="1053.0" layoutY="26.0" text="Row Size" AnchorPane.rightAnchor="108.0">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Label>
                      </children>
                   </AnchorPane>
                </content>
+            </Tab>
+            <Tab text="Reports">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Pane layoutX="14.0" layoutY="25.0" prefHeight="219.0" prefWidth="302.0" style="-fx-border-color: grey;">
+                           <children>
+                              <Label layoutX="33.0" layoutY="26.0" text="Monthy Report">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <Button layoutX="162.0" layoutY="139.0" mnemonicParsing="false" onAction="#onGenerateMonthlyReport" text="Generate Report" />
+                              <ComboBox fx:id="report_select_monthly" layoutX="33.0" layoutY="103.0" prefHeight="25.0" prefWidth="233.0" promptText="Select Month" />
+                              <HBox fx:id="report_progress_monthly" alignment="CENTER" layoutX="1.0" layoutY="164.0" prefHeight="55.0" prefWidth="301.0" spacing="10.0" visible="false">
+                                 <children>
+                                    <ProgressIndicator prefHeight="35.0" prefWidth="35.0" />
+                                    <Label fx:id="report_progressLabel_montly" text="Generating Report . . ." />
+                                 </children>
+                              </HBox>
+                              <TextField fx:id="report_monthly_year" layoutX="32.0" layoutY="68.0" prefHeight="25.0" prefWidth="233.0" promptText="Enter year (default 2021)" />
+                           </children>
+                        </Pane>
+                        <Pane layoutX="343.0" layoutY="25.0" prefHeight="219.0" prefWidth="302.0" style="-fx-border-color: grey;">
+                           <children>
+                              <Button layoutX="155.0" layoutY="137.0" mnemonicParsing="false" onAction="#onGenerateDateRangeReport" text="Generate Report" />
+                              <DatePicker fx:id="report_select_dateRangeFrom" layoutX="85.0" layoutY="67.0" />
+                              <DatePicker fx:id="report_select_dateRangeUntil" layoutX="85.0" layoutY="102.0" />
+                              <Label layoutX="31.0" layoutY="26.0" text="Date Range Report">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <Label layoutX="32.0" layoutY="70.0" text="From" />
+                              <Label layoutX="32.0" layoutY="105.0" text="Until" />
+                              <HBox fx:id="report_progress_dateRange" alignment="CENTER" layoutX="1.0" layoutY="166.0" prefHeight="53.0" prefWidth="301.0" spacing="10.0" visible="false">
+                                 <children>
+                                    <ProgressIndicator prefHeight="35.0" prefWidth="35.0" />
+                                    <Label fx:id="report_progressLabel_dateRange" text="Generating Report . . ." />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </Pane>
+                     </children>
+                  </AnchorPane>
+              </content>
             </Tab>
             <Tab fx:id="tab_settings" text="Settings">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button layoutX="245.0" layoutY="79.0" mnemonicParsing="false" onAction="#onSaveConfigurations" prefHeight="25.0" prefWidth="63.0" text="Save" />
-                        <Button layoutX="179.0" layoutY="79.0" mnemonicParsing="false" onAction="#onTestConnection" prefHeight="25.0" prefWidth="54.0" text="Test" />
-                        <TextField fx:id="settings_address" layoutX="21.0" layoutY="46.0" prefHeight="25.0" prefWidth="290.0" />
-                        <Label layoutX="22.0" layoutY="28.0" text="Server Address" />
+                        <Button layoutX="245.0" layoutY="85.0" mnemonicParsing="false" onAction="#onSaveConfigurations" prefHeight="25.0" prefWidth="63.0" text="Save" />
+                        <Button layoutX="179.0" layoutY="85.0" mnemonicParsing="false" onAction="#onTestConnection" prefHeight="25.0" prefWidth="54.0" text="Test" />
+                        <TextField fx:id="settings_address" layoutX="21.0" layoutY="52.0" prefHeight="25.0" prefWidth="290.0" />
+                        <Label layoutX="22.0" layoutY="28.0" text="Server Address">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font></Label>
                      </children></AnchorPane>
               </content>
             </Tab>

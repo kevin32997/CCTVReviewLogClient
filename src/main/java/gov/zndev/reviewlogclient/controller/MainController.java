@@ -8,17 +8,17 @@ import gov.zndev.reviewlogclient.controller.reviewlogs.AddNewPersonnelCtrl;
 import gov.zndev.reviewlogclient.controller.reviewlogs.ConfirmReviewCtrl;
 import gov.zndev.reviewlogclient.controller.reviewlogs.ViewReviewLogCtrl;
 import gov.zndev.reviewlogclient.controller.users.ViewUserController;
-import gov.zndev.reviewlogclient.helpers.AlertDialogHelper;
-import gov.zndev.reviewlogclient.helpers.Helper;
-import gov.zndev.reviewlogclient.helpers.ResourceHelper;
-import gov.zndev.reviewlogclient.helpers.SearchResultListView;
+import gov.zndev.reviewlogclient.helpers.*;
+import gov.zndev.reviewlogclient.helpers.JasperViewer.JasperViewerFx;
 import gov.zndev.reviewlogclient.models.Incident;
 import gov.zndev.reviewlogclient.models.Personnel;
 import gov.zndev.reviewlogclient.models.ReviewLog;
 import gov.zndev.reviewlogclient.models.User;
 import gov.zndev.reviewlogclient.models.other.RepoInterface;
 import gov.zndev.reviewlogclient.models.other.Sort;
+import gov.zndev.reviewlogclient.repositories.incidents.IncidentRepository;
 import gov.zndev.reviewlogclient.repositories.personnels.PersonnelRepo;
+import gov.zndev.reviewlogclient.repositories.reports.ReportsRepository;
 import gov.zndev.reviewlogclient.repositories.reviewlogs.ReviewLogsRepository;
 import gov.zndev.reviewlogclient.repositories.system.SystemDataRepository;
 import gov.zndev.reviewlogclient.repositories.users.UsersRepo;
@@ -33,11 +33,14 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import net.rgielen.fxweaver.core.FxControllerAndView;
 import net.rgielen.fxweaver.core.FxWeaver;
 import net.rgielen.fxweaver.core.FxmlView;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +50,7 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 @FxmlView("main_layout.fxml")
@@ -189,9 +193,18 @@ public class MainController {
     @FXML
     private PasswordField user_confirm_pass;
 
-
     @FXML
     private ComboBox<String> user_userRole;
+
+    @FXML
+    private TextField review_rowsize_field;
+
+    @FXML
+    private TextField per_rowsize_field;
+
+    @FXML
+    private TextField user_rowsize_field;
+
 
     /*==================================================================================================================
                                                             MAIN
@@ -207,7 +220,9 @@ public class MainController {
     private ReviewLogsRepository reviewLogsRepo;
     private UsersRepo usersRepo;
     private SystemDataRepository systemRepo;
+    private ReportsRepository reportsRepo;
     private TableUpdateService updatesService;
+    private IncidentRepository incidentRepo;
 
     @Autowired
     private FxWeaver fxWeaver;
@@ -221,16 +236,166 @@ public class MainController {
         reviewLogsRepo = new ReviewLogsRepository();
         usersRepo = new UsersRepo();
         systemRepo = new SystemDataRepository();
+        reportsRepo = new ReportsRepository();
         updatesService = new TableUpdateService();
+        incidentRepo = new IncidentRepository();
         setup();
     }
 
     private void setup() {
+        // Other
+        setTableRowSizes();
+        setupTableRowSizeField();
+
+        // Tabs
         setupPersonnelTab();
         setupReviewLogsTab();
         setupUsersTab();
         startAutoUpdate();
+        setupReportsTab();
         setupSettingsTab();
+    }
+
+    private void setTableRowSizes() {
+        review_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+        per_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+        user_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+
+        review_table_row_size = ConfigProperties.TABLE_ROW_SIZE;
+        per_table_row_size = ConfigProperties.TABLE_ROW_SIZE;
+        user_table_row_size = ConfigProperties.TABLE_ROW_SIZE;
+    }
+
+    // Setups Row Size field Action on tabs w/ tables
+    private void setupTableRowSizeField() {
+        review_rowsize_field.setOnAction(e -> {
+            log.info("Review row size field entered. Value: " + review_rowsize_field.getText());
+
+            // Check if not empty
+            if (!review_rowsize_field.getText().equals("")) {
+
+                // Check if it is numeric
+                try {
+                    int new_rowsize = Integer.parseInt(review_rowsize_field.getText());
+                    if ((new_rowsize > 0)) {
+
+                        // Save the new Row Size
+                        ConfigProperties.TABLE_ROW_SIZE = new_rowsize;
+
+                        // Update config.properties
+                        ConfigProperties.UpdateConfigurations();
+
+                        // Update Row Fields on each tabs w/ tables
+                        setTableRowSizes();
+
+                        // Update Tables and Pagination
+                        updateTablesAndPagination();
+                    } else {
+                        // Input cant be less than 1
+                        AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Input must be a number greater than 1!", null);
+                        review_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+                    }
+                } catch (NumberFormatException ex) {
+                    // Show error
+                    AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Input must be a number greater than 1!", null);
+                    review_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } else {
+                // Show alert
+                AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Cant be empty!", "Input must be a number greater than 1.");
+                review_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+            }
+        });
+
+        per_rowsize_field.setOnAction(e -> {
+            log.info("Personnel row size field entered. Value: " + per_rowsize_field.getText());
+
+            // Check if not empty
+            if (!per_rowsize_field.getText().equals("")) {
+
+                // Check if it is numeric
+                try {
+                    int new_rowsize = Integer.parseInt(per_rowsize_field.getText());
+                    if ((new_rowsize > 0)) {
+
+                        // Save the new Row Size
+                        ConfigProperties.TABLE_ROW_SIZE = new_rowsize;
+
+                        // Update config.properties
+                        ConfigProperties.UpdateConfigurations();
+
+                        // Update Row Fields on each tabs w/ tables
+                        setTableRowSizes();
+
+                        // Update Tables and Pagination
+                        updateTablesAndPagination();
+                    } else {
+                        // Input cant be less than 1
+                        AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Input must be a number greater than 1!", null);
+                        per_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+                    }
+                } catch (NumberFormatException ex) {
+                    // Show error
+                    AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Input must be a number greater than 1!", null);
+                    per_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } else {
+                // Show alert
+                AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Cant be empty!", "Input must be a number greater than 1.");
+                per_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+            }
+        });
+
+        user_rowsize_field.setOnAction(e -> {
+            log.info("User row size field entered. Value: " + user_rowsize_field.getText());
+
+            // Check if not empty
+            if (!user_rowsize_field.getText().equals("")) {
+
+                // Check if it is numeric
+                try {
+                    int new_rowsize = Integer.parseInt(user_rowsize_field.getText());
+                    if ((new_rowsize > 0)) {
+
+                        // Save the new Row Size
+                        ConfigProperties.TABLE_ROW_SIZE = new_rowsize;
+
+                        // Update config.properties
+                        ConfigProperties.UpdateConfigurations();
+
+                        // Update Row Fields on each tabs w/ tables
+                        setTableRowSizes();
+
+                        // Update Tables and Pagination
+                        updateTablesAndPagination();
+                    } else {
+                        // Input cant be less than 1
+                        AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Input must be a number greater than 1!", null);
+                        user_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+                    }
+                } catch (NumberFormatException ex) {
+                    // Show error
+                    AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Input must be a number greater than 1!", null);
+                    user_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } else {
+                // Show alert
+                AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Input Error", "Cant be empty!", "Input must be a number greater than 1.");
+                user_rowsize_field.setText("" + ConfigProperties.TABLE_ROW_SIZE);
+            }
+        });
+    }
+
+    private void updateTablesAndPagination() {
+        refreshReviewLogTableData();
+        refreshPersonnelTableData();
+        refreshUsersTableData();
     }
 
     public void setUser(User user) {
@@ -239,8 +404,8 @@ public class MainController {
         checkUserAuth(user);
     }
 
-    private void checkUserAuth(User user){
-        if(user.getUserRole().equals(User.ROLE_ENCODER)){
+    private void checkUserAuth(User user) {
+        if (user.getUserRole().equals(User.ROLE_ENCODER)) {
             main_tabpane.getTabs().remove(tab_user);
         }
     }
@@ -279,7 +444,6 @@ public class MainController {
         this.main_stage.setResizable(false);
         this.main_stage.centerOnScreen();
 
-
         // Clear user data
         ResourceHelper.MAIN_USER = null;
     }
@@ -301,22 +465,77 @@ public class MainController {
 
     private void setupReviewLogsField() {
 
-        review_incident_list.setOnMouseClicked(e -> {
+        // Search Function
+        review_search_logs.setOnAction(e -> {
+            String search = review_search_logs.getText();
+            if (!search.equals("")) {
+                try {
 
+                    int searchAsId = Integer.parseInt(search);
+                    log.info("Review Search is numeric.");
+                    searchReviewById(searchAsId);
+                    return;
+                } catch (NumberFormatException ex) {
+                    log.info("Cannot parse search to Integer.");
+                }
+
+                searchReviewByPersonnel(search);
+            }
+        });
+
+        review_search_logs.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.equals("")) {
+                loadReviewLogToTable(review_selected_page, review_table_row_size);
+            }
+        });
+
+        review_incident_list.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2) {
                 Incident incident = incidents.get(review_incident_list.getSelectionModel().getSelectedIndex());
-
                 boolean noTime = true;
                 if (!incident.getTime().equals("")) {
                     noTime = false;
                 }
-
                 openAddIncident(incident.getIncidentDate(), noTime, incident.getDescription(), AddIncidentDescriptionCtrl.MODE_EDIT, review_incident_list.getSelectionModel().getSelectedIndex());
             }
         });
-
     }
 
+    private void searchReviewByPersonnel(String search) {
+        log.info("Searching by personnel's info . . .");
+        reviewLogsRepo.searchReviewLogByPersonnel(search, review_table_row_size, (success, message, object) -> {
+            if (success) {
+                log.info("Search success.");
+                List<ReviewLog> list = (List<ReviewLog>) object;
+                log.info("Searched list size is " + list.size());
+
+                Platform.runLater(() -> {
+                    rev_table_logs.getItems().clear();
+                    rev_table_logs.getItems().addAll(list);
+                });
+
+            } else {
+                log.info("Error occurred while searching\n" + message);
+            }
+        });
+    }
+
+    private void searchReviewById(int id) {
+        log.info("Searching by review log id . . .");
+        reviewLogsRepo.searchReviewLogById(id, review_table_row_size, (success, message, object) -> {
+            if (success) {
+                List<ReviewLog> list = (List<ReviewLog>) object;
+
+                Platform.runLater(() -> {
+                    rev_table_logs.getItems().clear();
+                    rev_table_logs.getItems().addAll((List<ReviewLog>) object);
+                });
+
+            } else {
+                log.info("Error occurred while searching\n" + message);
+            }
+        });
+    }
 
     private void setupReviewLogsTable() {
         // Table On Items clicked
@@ -541,7 +760,7 @@ public class MainController {
         incidents.add(incident);
         FxControllerAndView<ReviewIncidentItemCtrl, AnchorPane> incItem = fxWeaver.load(ReviewIncidentItemCtrl.class);
         incItem.getController().getDate_time().setText(incident.getDay() + " " + incident.getTime());
-        incItem.getController().getBtnRemove().setOnAction(e->{
+        incItem.getController().getBtnRemove().setOnAction(e -> {
             review_incident_list.getItems().remove(incItem.getView().get());
             incidents.remove(incident);
         });
@@ -614,12 +833,8 @@ public class MainController {
                         page_count++;
                     }
                     rev_pagination.setCurrentPageIndex(review_selected_page - 1);
+                    rev_pagination.setMaxPageIndicatorCount(50);
 
-                    if (review_selected_page < 50) {
-                        rev_pagination.setMaxPageIndicatorCount(page_count);
-                    } else {
-                        rev_pagination.setMaxPageIndicatorCount(50);
-                    }
                     rev_pagination.setPageCount(page_count);
                     rev_pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
                         rev_pagination.setCurrentPageIndex(newIndex.intValue());
@@ -677,7 +892,7 @@ public class MainController {
 
     @FXML
     void onReviewAdd(ActionEvent event) {
-        openAddIncident(null,true, "", AddIncidentDescriptionCtrl.MODE_ADD, -1);
+        openAddIncident(null, true, "", AddIncidentDescriptionCtrl.MODE_ADD, -1);
     }
 
     @FXML
@@ -700,6 +915,21 @@ public class MainController {
     }
 
     private void setupPersonnelField() {
+
+        // Personnel Search functions
+        per_search.setOnAction(e -> {
+            String search = per_search.getText();
+            if (!search.equals("")) {
+                searchPersonnel(search);
+            }
+        });
+
+        per_search.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.equals("")) {
+                loadPersonnelToTable(per_selected_page, per_table_row_size);
+            }
+        });
+
         this.per_firsname.setOnAction(e -> {
             per_surname.requestFocus();
         });
@@ -718,6 +948,24 @@ public class MainController {
         });
     }
 
+    private void searchPersonnel(String search) {
+        log.info("Searching personnel by personnel's info . . .");
+        personnelRepo.searchPersonnel(search, per_table_row_size, (success, message, object) -> {
+            if (success) {
+                log.info("Search success.");
+                List<Personnel> list = (List<Personnel>) object;
+                log.info("Searched list size is " + list.size());
+                Platform.runLater(() -> {
+                    personnel_table.getItems().clear();
+                    personnel_table.getItems().addAll(list);
+                });
+
+            } else {
+                log.info("Error occurred while searching\n" + message);
+            }
+        });
+    }
+
     private void setupPersonnelTable() {
         this.per_col_fullname.setCellValueFactory(c -> {
             if (c.getValue() != null) {
@@ -730,6 +978,15 @@ public class MainController {
         this.per_col_designation.setCellValueFactory(new PropertyValueFactory<>("position"));
         this.per_col_reviews.setCellValueFactory(new PropertyValueFactory<>("reviews"));
         this.per_col_dateadded.setCellValueFactory(new PropertyValueFactory<>("dateCreated"));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMMM dd, yyyy hh:mm:ss aaa");
+
+        this.per_col_dateadded.setCellValueFactory(c -> {
+            if (c.getValue() != null) {
+                return new SimpleStringProperty("" + dateFormat.format(c.getValue().getDateCreated()));
+            }
+            return new SimpleStringProperty("<no data>");
+        });
 
         this.personnel_table.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2) {
@@ -796,11 +1053,8 @@ public class MainController {
                     }
                     per_pagination.setCurrentPageIndex(per_selected_page - 1);
 
-                    if (per_selected_page < 50) {
-                        per_pagination.setMaxPageIndicatorCount(page_count);
-                    } else {
-                        per_pagination.setMaxPageIndicatorCount(50);
-                    }
+                    per_pagination.setMaxPageIndicatorCount(50);
+
                     per_pagination.setPageCount(page_count);
                     per_pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
                         per_pagination.setCurrentPageIndex(newIndex.intValue());
@@ -896,6 +1150,21 @@ public class MainController {
     }
 
     private void setupUsersField() {
+
+        // Personnel Search functions
+        user_search.setOnAction(e -> {
+            String search = user_search.getText();
+            if (!search.equals("")) {
+                searchUser(search);
+            }
+        });
+
+        user_search.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.equals("")) {
+                loadUsersToTable(user_selected_page, user_table_row_size);
+            }
+        });
+
         this.user_fullname.setOnAction(e -> {
             user_username.requestFocus();
         });
@@ -913,16 +1182,33 @@ public class MainController {
         this.user_userRole.getSelectionModel().select(0);
     }
 
+    private void searchUser(String search) {
+        log.info("Searching users by users's info . . .");
+        usersRepo.searchUser(search, user_table_row_size, (success, message, object) -> {
+            if (success) {
+                log.info("Search success.");
+                List<User> list = (List<User>) object;
+                log.info("Searched list size is " + list.size());
+                Platform.runLater(() -> {
+                    user_table.getItems().clear();
+                    user_table.getItems().addAll(list);
+                });
+            } else {
+                log.info("Error occurred while searching\n" + message);
+            }
+        });
+    }
+
     private void setupUsersTable() {
         this.user_col_fullname.setCellValueFactory(new PropertyValueFactory<>("fullname"));
 
         this.user_col_username.setCellValueFactory(new PropertyValueFactory<>("username"));
 
         this.user_col_reviewed.setCellValueFactory(new PropertyValueFactory<>("reviewCount"));
-
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMMM dd, yyyy hh:mm:ss aaa");
         this.user_col_datecreated.setCellValueFactory(c -> {
             if (c.getValue() != null) {
-                return new SimpleStringProperty("" + c.getValue().getDateCreated());
+                return new SimpleStringProperty("" + dateFormat.format(c.getValue().getDateCreated()));
             }
             return new SimpleStringProperty("<no data>");
         });
@@ -970,11 +1256,8 @@ public class MainController {
                     }
                     user_pagination.setCurrentPageIndex(user_selected_page - 1);
 
-                    if (user_selected_page < 50) {
-                        user_pagination.setMaxPageIndicatorCount(page_count);
-                    } else {
-                        user_pagination.setMaxPageIndicatorCount(50);
-                    }
+                    user_pagination.setMaxPageIndicatorCount(page_count);
+
                     user_pagination.setPageCount(page_count);
                     user_pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
                         user_pagination.setCurrentPageIndex(newIndex.intValue());
@@ -1074,10 +1357,231 @@ public class MainController {
     void onUserSave(ActionEvent event) {
         saveNewUser();
     }
+
+    /*==================================================================================================================
+                                                         END OF USERS TAB
+    ==================================================================================================================*/
+
+    /*==================================================================================================================
+                                                         REPORTS TAB
+    ==================================================================================================================*/
+
+    @FXML
+    private DatePicker report_select_dateRangeFrom;
+
+    @FXML
+    private DatePicker report_select_dateRangeUntil;
+
+    @FXML
+    private ComboBox<String> report_select_monthly;
+
+    @FXML
+    private HBox report_progress_monthly;
+
+
+    @FXML
+    private TextField report_monthly_year;
+
+
+    @FXML
+    private Label report_progressLabel_montly;
+
+    @FXML
+    private HBox report_progress_dateRange;
+
+    @FXML
+    private Label report_progressLabel_dateRange;
+
+
+    private String[] months = {
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+    };
+
+    private String defaultYear = "";
+
+    private void setupReportsTab() {
+        report_select_monthly.getItems().addAll(months);
+        Calendar now = Calendar.getInstance();
+        int year = now.get(Calendar.YEAR);
+        defaultYear = String.valueOf(year);
+        report_monthly_year.setPromptText("Enter year (default " + defaultYear + ")");
+    }
+
+    private void generateMonthlyReport(int month, int year) {
+        report_progressLabel_montly.setText("fetching data from server . . .");
+        report_progress_monthly.setVisible(true);
+
+        // fetch data from server
+        new Thread(() -> {
+
+            reportsRepo.getReviewByMonthAndYear(month + 1, year, (success, message, object) -> {
+                if (success) {
+                    List<ReviewLog> list = (List<ReviewLog>) object;
+                    if (!list.isEmpty()) {
+                        Platform.runLater(() -> {
+                            report_progressLabel_montly.setText("creating report . . .");
+                        });
+
+                        int count = 0;
+                        for (ReviewLog reviewLog : list) {
+                            count++;
+                            reviewLog.setCount("" + count);
+                            reviewLog.setReviewId(new DecimalFormat("000000").format(reviewLog.getId()));
+                            reviewLog.setPersonnelName(reviewLog.getPersonnel().getFullName());
+                            reviewLog.setOffice(reviewLog.getPersonnel().getOffice());
+                            reviewLog.setFormattedReviewDate(new SimpleDateFormat("MMMMM dd, yyyy").format(reviewLog.getReviewDate()));
+                            reviewLog.setIncidentCountString("" + ((int) Double.parseDouble(reviewLog.getIncidentCountString())));
+                        }
+
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("title", "CCTV Review Monthly Report");
+                        map.put("date_range", "Report Month/Year: " + months[month] + " " + year);
+                        map.put("date_generated", "Date: " + new SimpleDateFormat("MMMMM dd, yyyy hh:mm:ss aaa").format(new Date()));
+                        map.put("report_created_by", ResourceHelper.MAIN_USER.getFullname());
+                        createAndShowReport("Date Range Report", map, list);
+
+                        Platform.runLater(() -> {
+                            report_progress_monthly.setVisible(false);
+                        });
+
+                    } else {
+                        Platform.runLater(() -> {
+                            report_progress_monthly.setVisible(false);
+                            AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.INFORMATION, "Reporting Message", "No Data found.", null);
+                        });
+                    }
+                } else {
+                    Platform.runLater(() -> {
+                        report_progress_monthly.setVisible(false);
+                        AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.INFORMATION, "Server Error", message, null);
+                    });
+                }
+            });
+        }).start();
+    }
+
+    private void generateDateRangeReport(String dateFrom, String dateUntil) {
+        report_progressLabel_dateRange.setText("fetching data from server . . .");
+        report_progress_dateRange.setVisible(true);
+
+        // fetch data from server
+        new Thread(() -> {
+
+            reportsRepo.getReviewsBetweenDates(dateFrom, dateUntil, (success, message, object) -> {
+                if (success) {
+                    List<ReviewLog> list = (List<ReviewLog>) object;
+                    if (!list.isEmpty()) {
+                        Platform.runLater(() -> {
+                            report_progressLabel_dateRange.setText("creating report . . .");
+                        });
+
+                        int count = 0;
+                        for (ReviewLog reviewLog : list) {
+                            count++;
+                            reviewLog.setCount("" + count);
+                            reviewLog.setReviewId(new DecimalFormat("000000").format(reviewLog.getId()));
+                            reviewLog.setPersonnelName(reviewLog.getPersonnel().getFullName());
+                            reviewLog.setOffice(reviewLog.getPersonnel().getOffice());
+                            reviewLog.setFormattedReviewDate(new SimpleDateFormat("MMMMM dd, yyyy").format(reviewLog.getReviewDate()));
+                            reviewLog.setIncidentCountString("" + ((int) Double.parseDouble(reviewLog.getIncidentCountString())));
+                        }
+
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("title", "CCTV Review Date Range Report");
+                        map.put("date_range", "Date Range: " + dateFrom + " to " + dateUntil);
+                        map.put("date_generated", "Date: " + new SimpleDateFormat("MMMMM dd, yyyy hh:mm:ss aaa").format(new Date()));
+                        map.put("report_created_by", ResourceHelper.MAIN_USER.getFullname());
+                        createAndShowReport("Date Range Report", map, list);
+
+                        Platform.runLater(() -> {
+                            report_progress_dateRange.setVisible(false);
+                        });
+
+                    } else {
+                        Platform.runLater(() -> {
+                            report_progress_dateRange.setVisible(false);
+                            AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.INFORMATION, "Reporting Message", "No Data found between dates.", null);
+                        });
+                    }
+                } else {
+                    Platform.runLater(() -> {
+                        report_progress_dateRange.setVisible(false);
+                        AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.INFORMATION, "Server Error", message, null);
+                    });
+                }
+            });
+        }).start();
+    }
+
+
+    private void createAndShowReport(String title, Map<String, Object> map, List<ReviewLog> list) {
+        try {
+            JasperReport report = JasperCompileManager.compileReport("cttvreviewreport.jrxml");
+            JRBeanCollectionDataSource data = new JRBeanCollectionDataSource(list);
+            JasperPrint jprint = JasperFillManager.fillReport(report, map, data);
+            Platform.runLater(() -> {
+                new JasperViewerFx().viewReport(title, jprint);
+            });
+
+        } catch (JRException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void onGenerateMonthlyReport(ActionEvent event) {
+        if (report_select_monthly.getValue() != null) {
+            try {
+                int year = 0;
+                if (report_monthly_year.getText().equals("")) {
+                    year = Integer.parseInt(defaultYear);
+                } else {
+                    year = Integer.parseInt(report_monthly_year.getText());
+                }
+                generateMonthlyReport(report_select_monthly.getSelectionModel().getSelectedIndex(), year);
+            } catch (NumberFormatException ex) {
+                AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Reporting Error", "Year format is not Valid!", "Example format: 2019, 2020, 2021");
+            }
+        } else {
+            AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Reporting Error", "Please select Month and Year!", null);
+        }
+    }
+
+    @FXML
+    void onGenerateDateRangeReport(ActionEvent event) {
+
+        if (report_select_dateRangeFrom.getValue() != null && report_select_dateRangeUntil.getValue() != null) {
+            LocalDate dateFromLocalDate = report_select_dateRangeFrom.getValue();
+            LocalDate dateUntilLocalDate = report_select_dateRangeUntil.getValue();
+
+            // Compare Dates
+            if (dateUntilLocalDate.compareTo(dateFromLocalDate) >= 0) {
+                generateDateRangeReport(dateFromLocalDate.toString(), dateUntilLocalDate.toString());
+            } else {
+                AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Reporting Error", "Incompatible Dates!", "DATE UNTIL must be greater than DATE FROM");
+            }
+
+        } else {
+            // Date Range no date selected
+            AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "Reporting Error", "Please select Date on both fields!", null);
+        }
+
+    }
+
     /*==================================================================================================================
                                                         SETTINGS TAB
     ==================================================================================================================*/
-
 
     @FXML
     private TextField settings_address;
@@ -1087,7 +1591,7 @@ public class MainController {
     }
 
     private void setupServerAddress() {
-        this.settings_address.setText(ResourceHelper.BASE_URL);
+        this.settings_address.setText(ConfigProperties.BASE_URL);
     }
 
     @FXML
@@ -1140,7 +1644,7 @@ public class MainController {
             }
         } else {
             AlertDialogHelper.ShowSimpleAlertDialog(Alert.AlertType.ERROR, "System Error", "Field cannot be empty", "Default: http://localhost:8080/");
-            settings_address.setText(ResourceHelper.BASE_URL);
+            settings_address.setText(ConfigProperties.BASE_URL);
         }
     }
 

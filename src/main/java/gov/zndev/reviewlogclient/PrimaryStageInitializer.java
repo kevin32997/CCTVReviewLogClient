@@ -2,6 +2,7 @@ package gov.zndev.reviewlogclient;
 
 import gov.zndev.reviewlogclient.controller.components.LoginCtrl;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import net.rgielen.fxweaver.core.FxControllerAndView;
@@ -26,10 +27,12 @@ public class PrimaryStageInitializer implements ApplicationListener<StageReadyEv
         FxControllerAndView<LoginCtrl, AnchorPane> login = fxWeaver.load(LoginCtrl.class);
         Stage stage = event.main_stage;
         stage.setTitle("CCTV Review Logger - Login");
+        stage.getIcons().add(new Image("icon.png"));
         Scene scene = new Scene(login.getView().get()); //(3)
         stage.setScene(scene);
         stage.setResizable(false);
         login.getController().setStage(stage);
         stage.show();
+
     }
 }

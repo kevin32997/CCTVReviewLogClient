@@ -1,6 +1,8 @@
 package gov.zndev.reviewlogclient.controller.users;
 
 import gov.zndev.reviewlogclient.controller.MainController;
+import gov.zndev.reviewlogclient.controller.components.ChangePassCtrl;
+import gov.zndev.reviewlogclient.controller.components.UpdateUserInfoCtrl;
 import gov.zndev.reviewlogclient.controller.reviewlogs.ViewReviewLogCtrl;
 import gov.zndev.reviewlogclient.helpers.AlertDialogHelper;
 import gov.zndev.reviewlogclient.helpers.Helper;
@@ -17,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import net.rgielen.fxweaver.core.FxControllerAndView;
 import net.rgielen.fxweaver.core.FxWeaver;
@@ -86,6 +89,7 @@ public class ViewUserController {
             btnLogout.setVisible(false);
         }
 
+
     }
 
     public void setStage(Stage stage) {
@@ -113,8 +117,8 @@ public class ViewUserController {
 
 
     private void setupTable() {
-        this.review_table.setOnMouseClicked(e->{
-            if(e.getClickCount()==2){
+        this.review_table.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) {
                 openReviewLog(review_table.getSelectionModel().getSelectedItem());
             }
         });
@@ -213,6 +217,47 @@ public class ViewUserController {
         stage.show();
     }
 
+    private void showChangePassDialog() {
+        FxControllerAndView<ChangePassCtrl, AnchorPane> changePass = fxWeaver.load(ChangePassCtrl.class);
+
+        Stage stage = Helper.CreateStage("Update Password - " + user.getFullname());
+
+        Scene scene = new Scene(changePass.getView().get());
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.initOwner(this.stage);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        changePass.getController().setUser(this.user);
+
+        stage.show();
+    }
+
+    private void showUpdateUserInfoDialog() {
+        FxControllerAndView<UpdateUserInfoCtrl, AnchorPane> updateUserInfo = fxWeaver.load(UpdateUserInfoCtrl.class);
+
+        Stage stage = Helper.CreateStage("Update Info - " + user.getFullname());
+
+        Scene scene = new Scene(updateUserInfo.getView().get());
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.initOwner(this.stage);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        updateUserInfo.getController().setUser(this.user);
+
+        stage.show();
+    }
+
+    @FXML
+    void onChangePassword(ActionEvent event) {
+        showChangePassDialog();
+    }
+
+    @FXML
+    void onUpdateInfo(ActionEvent event) {
+        showUpdateUserInfoDialog();
+    }
 
     @FXML
     void onLogout(ActionEvent event) {

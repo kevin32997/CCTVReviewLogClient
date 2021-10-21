@@ -18,6 +18,7 @@ public class ReviewLog {
     private String reviewId;
     private int personnelId;
     private String personnelName;
+
     private String incidentDescription;
     private String inclusiveDates;
     private Date reviewDate;
@@ -25,8 +26,11 @@ public class ReviewLog {
     private int reviewerId;
     private String reviewerName;
     private String reviewerCodeName;
-
     private Personnel personnel;
+
+    private String count;
+    private String office;
+    private String incidentCountString;
 
     private IntegerProperty incidentCount= new SimpleIntegerProperty();
 

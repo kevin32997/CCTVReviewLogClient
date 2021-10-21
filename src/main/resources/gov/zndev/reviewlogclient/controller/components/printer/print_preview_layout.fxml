@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Line?>
+
+<AnchorPane id="AnchorPane" fx:id="main_pane" prefHeight="815.0" prefWidth="596.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.zndev.reviewlogclient.controller.components.printer.PrintPreviewCtrl">
+   <children>
+      <Line endX="463.0" layoutX="115.0" layoutY="44.0" startX="-100.0" />
+      <Slider fx:id="slider" layoutX="62.0" layoutY="17.0" prefHeight="14.0" prefWidth="515.0" value="28.0" />
+      <Label layoutX="15.0" layoutY="15.0" text="Zoom" />
+      <Button fx:id="btnPrint" layoutX="510.0" layoutY="782.0" mnemonicParsing="false" onAction="#onPrint" prefHeight="25.0" prefWidth="74.0" text="Print" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+      <Button fx:id="btnPrintSettings" layoutX="389.0" layoutY="780.0" mnemonicParsing="false" onAction="#onPrintSettings" prefHeight="25.0" prefWidth="102.0" text="Printer Settings" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="90.0" />
+      <Label fx:id="printerLabel" layoutX="291.0" layoutY="787.0" text="No printer available" AnchorPane.bottomAnchor="11.0" AnchorPane.rightAnchor="200.0" />
+   </children>
+</AnchorPane>

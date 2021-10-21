@@ -11,7 +11,6 @@ import gov.zndev.reviewlogclient.repositories.incidents.IncidentRepository;
 import gov.zndev.reviewlogclient.repositories.reviewlogs.ReviewLogsRepository;
 import gov.zndev.reviewlogclient.services.TableUpdate;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.controlsfx.validation.ValidationSupport;
@@ -25,7 +24,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -71,6 +69,7 @@ public class Helper {
             }
 
 
+
             convertedList.add(personnel);
         }
 
@@ -113,6 +112,8 @@ public class Helper {
             reviewLog.setInclusiveDates((map.get("inclusiveDates") != null) ? map.get("inclusiveDates").toString() : "");
             reviewLog.setReviewerId((map.get("reviewerId") != null) ? (int) Double.parseDouble(map.get("reviewerId").toString()) : 0);
             reviewLog.setReviewerName((map.get("reviewerName") != null) ? map.get("reviewerName").toString() : "");
+            reviewLog.setIncidentCountString((map.get("incidentCount") != null) ? map.get("incidentCount").toString() : "");
+
             try {
                 DateFormat utcFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -120,7 +121,6 @@ public class Helper {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-
 
             LinkedTreeMap per_map = (LinkedTreeMap) map.get("personnel");
             if (per_map != null) {
@@ -205,16 +205,6 @@ public class Helper {
 
         return convertedList;
     }
-
-    public static final void UpdateConfigurations() throws IOException {
-        File configFile = new File("config.properties");
-        Properties props = new Properties();
-        props.setProperty("base_url", ResourceHelper.BASE_URL);
-        FileWriter writer = new FileWriter(configFile);
-        props.store(writer, "Server Settings");
-        writer.close();
-    }
-
 
 //
 //    public static final List<Item> CastToItemList(List<?> list) {

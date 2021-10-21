@@ -1,14 +1,11 @@
 package gov.zndev.reviewlogclient.controller.components;
 
-import com.jfoenix.controls.JFXSlider;
-import gov.zndev.reviewlogclient.controller.reviewlogs.ViewReviewLogCtrl;
 import gov.zndev.reviewlogclient.helpers.AlertDialogHelper;
 import gov.zndev.reviewlogclient.helpers.Helper;
 import gov.zndev.reviewlogclient.models.Incident;
 import gov.zndev.reviewlogclient.models.Personnel;
 import gov.zndev.reviewlogclient.models.ReviewLog;
 import gov.zndev.reviewlogclient.models.User;
-import gov.zndev.reviewlogclient.models.other.RepoInterface;
 import gov.zndev.reviewlogclient.repositories.incidents.IncidentRepository;
 import gov.zndev.reviewlogclient.repositories.personnels.PersonnelRepo;
 import gov.zndev.reviewlogclient.repositories.reviewlogs.ReviewLogsRepository;
